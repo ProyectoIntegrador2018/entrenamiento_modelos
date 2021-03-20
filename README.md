@@ -63,7 +63,7 @@ Before setting up the project, you need to install the following three packages:
  * [Yarn](https://yarnpkg.com/)
  * [Python](https://www.python.org)
 
-After installing please you can follow this simple steps:
+After installing, you can follow these simple steps:
 
 1. Clone this repository into your local machine
 
@@ -98,13 +98,19 @@ $ npm install
   If you are using windows
   
 ```
-% venv\Scripts\activateker-compose logs
+% venv\Scripts\activate logs
 ```
 
 2. Before running the server you need run:
 
 ```
 $ pip install flask python-dotenv
+```
+
+3. Install CORS to allow the client side to make requests
+
+```
+$ pip install -U flask-cors
 ```
 
 3. And you start the server with:
