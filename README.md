@@ -63,7 +63,7 @@ Before setting up the project, you need to install the following three packages:
  * [Yarn](https://yarnpkg.com/)
  * [Python](https://www.python.org)
 
-After installing please you can follow this simple steps:
+After installing, you can follow these simple steps:
 
 1. Clone this repository into your local machine
 
@@ -71,7 +71,7 @@ After installing please you can follow this simple steps:
 $ git clone https://github.com/ProyectoIntegrador2018/entrenamiento_modelos.git
 ```
 
-2. Inside the api folder you need to create a Python env with the following command:
+2. Inside the api folder open a terminal and run this to create a Python env:
 
 ```
 % python3 -m venv venv
@@ -82,7 +82,27 @@ $ git clone https://github.com/ProyectoIntegrador2018/entrenamiento_modelos.git
 % python -m venv venv
 ```
 
-3. Fire up a terminal inside client folder and run:
+3. In the same terminal run the following command:
+
+```
+% source venv/bin/activate
+```
+  If you are using windows
+  
+```
+% venv\Scripts\activate logs
+```
+
+4. Install the following dependencies:
+
+```
+% pip install flask python-dotenv
+% pip install -U flask-cors
+% pip install tablib
+% pip install "tablib[xls]"
+```
+
+5. Fire up a terminal inside client folder and run:
 
 ```
 $ npm install
@@ -98,16 +118,10 @@ $ npm install
   If you are using windows
   
 ```
-% venv\Scripts\activateker-compose logs
+% venv\Scripts\activate logs
 ```
 
-2. Before running the server you need run:
-
-```
-$ pip install flask python-dotenv
-```
-
-3. And you start the server with:
+3. Start the server with:
 
 ```
 $ flask run
