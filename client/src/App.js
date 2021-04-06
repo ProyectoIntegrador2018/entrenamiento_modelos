@@ -5,13 +5,14 @@ import React,{Component} from 'react';
 class App extends Component {
   
     state = {
-      selectedFile: null
+      selectedFile: null,
+      selectedType:'neuralN'
     };
     
     onFileChange = event => {
     
       this.setState({ selectedFile: event.target.files[0] });
-    
+      
     };
     
     onFileUpload = () => {
@@ -26,8 +27,14 @@ class App extends Component {
     
       console.log(this.state.selectedFile);
     
-      axios.post("api/upload", formData);
+      axios.post("api/upload/"+this.state.selectedType, formData).then(res => console.log(res.data));
+
     };
+
+    onTypeChange = event =>{
+      console.log(event.target.value)
+      this.setState({selectedType: event.target.value});
+    }
     
     fileData = () => {
     
@@ -69,6 +76,13 @@ class App extends Component {
             </h1>
             <div>
                 <input type="file" onChange={this.onFileChange} />
+                
+                <label for="model">Choose a model:</label>
+                <select id="model" value={this.state.selectedType} onChange={this.onTypeChange} >
+                  <option value="neuralN">Neural Network</option>
+                  <option value="linearR">Linear Regression</option>
+                </select>
+
                 <button onClick={this.onFileUpload}>
                   Upload!
                 </button>
