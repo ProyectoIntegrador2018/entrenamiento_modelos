@@ -22,23 +22,22 @@ def hola_mundo():
 def upload_file(modelType):
     raw_data = request.files['file'].read() 
     dataset = Dataset().load(raw_data, format='xlsx', headers=True)
-
+    
     data = np.array(dataset)
     headers = np.array(dataset.headers)
-    print(dataset)
+    #index variable to predict
+    variable = int(request.form["variable"])
+    #array of variables used for training
+    variables = request.form["variables"]
+    variables = list(variables.split(","))
+    variables = np.array([True if x=="true" else False for x in variables])
+
     while(data[0][-1] == None):
         data = np.delete(data, len(data[0])-1, 1)    
     headers = headers[:len(data[0])]
-
     while(data[len(data)-1][0] == None):
         data  = data[:len(data)-1]
-
-
-
-    print(modelType)
-    if(modelType=='neuralN'):
-        coef = neuralN(data, headers)
-    elif(modelType=='linearR'):
-        coef = linearR(data, headers)
+    
+    coef = prepareData(data, variable, variables, modelType)
 
     return str(coef)

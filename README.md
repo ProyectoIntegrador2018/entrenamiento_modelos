@@ -125,11 +125,11 @@ $ npm install
 First you need to export the FLASK_APP environment variable
 
 ```
-export FLASK_APP=hello.py
+export FLASK_APP=api.py
 ```
 In windows
 ```
-set FLASK_APP=hello.py
+set FLASK_APP=api.py
 ```
 ```
 $ flask run
