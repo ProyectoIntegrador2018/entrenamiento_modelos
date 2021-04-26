@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {ExcelRenderer} from 'react-excel-renderer';
+import { Doughnut, Line } from 'react-chartjs-2';
  
 import React,{Component} from 'react';
  
@@ -8,10 +9,16 @@ class App extends Component {
     state = {
       selectedFile: null,
       selectedType:'neuralN',
+      variableToCompare: 0,
       headers: null,
       rows: null,
+      xAxis: [],
+      yAxis: [],
       selectedVariable: null,
       trainVariables : null,
+      xLabel: "",
+      yLabel: "",
+      coefficient: null,
     };
     
     onFileChange = event => {
@@ -30,7 +37,8 @@ class App extends Component {
             headers: resp.rows[0],
             rows: resp.rows.slice(1,11),
             selectedVariable : 0,
-            trainVariables : [...Array(resp.rows[0].length)].map((u, i) => false)
+            trainVariables : [...Array(resp.rows[0].length)].map((u, i) => false),
+            coefficient: null
           });
         }
       }); 
@@ -55,8 +63,20 @@ class App extends Component {
         this.state.trainVariables
       )
     
-      axios.post("api/upload/"+this.state.selectedType, formData).then(res => console.log(res.data));
-
+      axios.post("api/upload/"+this.state.selectedType, formData).then(res => {
+        this.setState({coefficient: res.data});
+        var provitionalXAxis = [];
+        var provitionalYAxis = [];
+        this.state.rows.map((row) => {provitionalXAxis.push(row[this.state.variableToCompare])});
+        this.state.rows.map((row) => {provitionalYAxis.push(row[this.state.selectedVariable])});
+        this.setState({
+          xAxis: provitionalXAxis,
+          yAxis: provitionalYAxis,
+          xLabel: this.state.headers[this.state.variableToCompare],
+          yLabel: this.state.headers[this.state.selectedVariable],
+        });
+      });
+      
       console.log(this.state)
     };
 
@@ -68,8 +88,25 @@ class App extends Component {
     }
     
     onVariableChange = event =>{
-      this.setState({selectedVariable: parseInt(event.target.value)})
+      this.setState({selectedVariable: parseInt(event.target.value)});
+      console.log(event.target.value);
+      var provitionalYAxis = [];
+      this.state.rows.map((row) => {provitionalYAxis.push(row[parseInt(event.target.value)])});
+      this.setState({
+        yAxis: provitionalYAxis,
+        yLabel: this.state.headers[parseInt(event.target.value)],
+      });
+    }
 
+    onVariableToCompareChange = event =>{
+      this.setState({variableToCompare: parseInt(event.target.value)});
+      console.log(event.target.value);
+      var provitionalXAxis = [];
+      this.state.rows.map((row) => {provitionalXAxis.push(row[parseInt(event.target.value)])});
+      this.setState({
+        xAxis: provitionalXAxis,
+        xLabel: this.state.headers[parseInt(event.target.value)],
+      });
     }
 
     getVariable = () => { if(this.state.headers){
@@ -183,6 +220,70 @@ class App extends Component {
         );
       }
     };
+
+    resultData = () => {
+
+      const data = {
+        labels: ['Success', 'Failure'],
+        datasets: [
+          {
+            label: 'Coefficient',
+            data: [this.state.coefficient, 1- this.state.coefficient],
+            backgroundColor: [
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+            ],
+            borderColor: [
+              'rgba(75, 192, 192, 1)',
+              'rgba(255, 99, 132, 1)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      const lineData = {
+        labels: this.state.xAxis,
+        datasets: [
+          {
+            label: "Actual Values " + this.state.yLabel + " against " + this.state.xLabel,
+            data: this.state.yAxis,
+            fill: false,
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgba(255, 99, 132, 0.2)',
+          },
+        ],
+      };
+      
+      return (
+        <div>
+          <h2>Results</h2>
+          {this.state.coefficient!==null && 
+            (
+              <div>
+                <label for="variableToCompare" >Choose a variable to compare with the predicted variable:</label>
+                <select  onChange={this.onVariableToCompareChange}>
+                  {Object.entries(this.state.headers).map((item) => {    
+                              
+                    return (
+                      <option value={item[0]}  key={item[0]}>{item[1]}</option>
+                    
+                    );
+                  })}
+                </select>
+                <div>coefficient: {this.state.coefficient}</div>
+                <div style={{ position: "absolute", margin: "auto", width: "30vh", height: '30vh' }}>
+                  <Doughnut  data={data} options={{responsive: true, maintainAspectRatio: false}}/>
+                </div>
+                <div style={{ position: "relative", margin: "auto", width: "30vh", height: '30vh' }}>
+                  <Line  data={lineData} options={{responsive: true, maintainAspectRatio: false}}/>
+                </div>
+              </div>
+            )
+          }
+        </div>
+      );
+    };
     
     render() {
     
@@ -218,6 +319,7 @@ class App extends Component {
                 </button>
             </div>
           {this.fileData()}
+          {this.resultData()}
         </div>
       );
     }
