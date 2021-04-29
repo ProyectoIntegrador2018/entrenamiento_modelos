@@ -100,7 +100,6 @@ def randomFC(data):
     # Donde OK es 1, y 0 es Rechazado
     df[target] = df[target].map(lambda x: 1 if x == "OK" else 0)
     # Esta sera una lista de las columnas 
-    # que hacen falta discretizar
     cols = list( df.drop(columns = [target]).columns )
     # Discretizamos cols
     for i in cols:
@@ -115,10 +114,6 @@ def randomFC(data):
     clf = RandomForestClassifier(max_depth=2, random_state=0)
 
     # Hacemos el fit de la clasificacion
-    # Aqui es donde ya puedes cambiar "df"
-    # por alguna dataset "train",
-    # la cual hayas formado previamente para hacer el entrenamiento
-    # Ya dependera estas ultimas lineas de como lo manejes con tenserflow
     clf = clf.fit( df.drop(columns = [target]), df[target] )
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
@@ -128,8 +123,6 @@ def randomFR(data):
     df = pd.DataFrame(data)
     target = df.columns[-1]
     ######## Manipulacion de la data
-    # Esta sera una lista de las columnas 
-    # que hacen falta discretizar
     cols = list( df.drop(columns = [target]).columns )
     # Discretizamos cols
     for i in cols:
@@ -144,10 +137,6 @@ def randomFR(data):
     clf = RandomForestRegressor(max_depth=2, random_state=0)
 
     # Hacemos el fit de la clasificacion
-    # Aqui es donde ya puedes cambiar "df"
-    # por alguna dataset "train",
-    # la cual hayas formado previamente para hacer el entrenamiento
-    # Ya dependera estas ultimas lineas de como lo manejes con tenserflow
     clf = clf.fit( df.drop(columns = [target]), df[target] )
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
