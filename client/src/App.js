@@ -299,6 +299,8 @@ class App extends Component {
                 <select id="model" value={this.state.selectedType} onChange={this.onTypeChange} >
                   <option value="neuralN" >Neural Network</option>
                   <option value="linearR" >Linear Regression</option>
+                  <option value="randomFC">Random Forest Classification</option>
+                  <option value="randomFR">Random Forest Regression</option>
                 </select>
 
                 {this.getVariable()}

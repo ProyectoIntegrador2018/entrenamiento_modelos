@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from numpy import loadtxt
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
@@ -8,6 +9,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from keras import backend as K
 from sklearn.metrics import r2_score
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn import preprocessing
+from datetime import datetime
+from copy import copy
 
 
 def prepareData(data, variable, variables, modelType):
@@ -37,7 +42,10 @@ def prepareData(data, variable, variables, modelType):
         coef = neuralN(elements)
     elif(modelType=='linearR'):
         coef = linearR(elements)
-
+    elif(modelType=='randomFC'):
+        coef = randomFC(elements)
+    elif(modelType=='randomFR'):
+        coef = randomFR(elements)
     return coef
 
 def neuralN(data):
@@ -84,3 +92,63 @@ def linearR(data):
     print(score)
     return score
 
+def randomFC(data):
+    df = pd.DataFrame(data)
+    target = df.columns[-1]
+    ######## Manipulacion de la data
+    # Discretizamos el target
+    # Donde OK es 1, y 0 es Rechazado
+    df[target] = df[target].map(lambda x: 1 if x == "OK" else 0)
+    # Esta sera una lista de las columnas 
+    # que hacen falta discretizar
+    cols = list( df.drop(columns = [target]).columns )
+    # Discretizamos cols
+    for i in cols:
+        # Objeto para discretizar
+        le = preprocessing.LabelEncoder()
+        # Hacemos el fit a la columna de interes
+        le.fit( df[i] )
+
+        # transformamos la columna de interes
+        df[i] = le.transform( df[i] )
+    # Objeto de clasificacion
+    clf = RandomForestClassifier(max_depth=2, random_state=0)
+
+    # Hacemos el fit de la clasificacion
+    # Aqui es donde ya puedes cambiar "df"
+    # por alguna dataset "train",
+    # la cual hayas formado previamente para hacer el entrenamiento
+    # Ya dependera estas ultimas lineas de como lo manejes con tenserflow
+    clf = clf.fit( df.drop(columns = [target]), df[target] )
+    score = clf.score(df.drop(columns = [target]), df[target])
+    print(score)
+    return score
+
+def randomFR(data):
+    df = pd.DataFrame(data)
+    target = df.columns[-1]
+    ######## Manipulacion de la data
+    # Esta sera una lista de las columnas 
+    # que hacen falta discretizar
+    cols = list( df.drop(columns = [target]).columns )
+    # Discretizamos cols
+    for i in cols:
+        # Objeto para discretizar
+        le = preprocessing.LabelEncoder()
+        # Hacemos el fit a la columna de interes
+        le.fit( df[i] )
+
+        # transformamos la columna de interes
+        df[i] = le.transform( df[i] )
+    # Objeto de clasificacion
+    clf = RandomForestRegressor(max_depth=2, random_state=0)
+
+    # Hacemos el fit de la clasificacion
+    # Aqui es donde ya puedes cambiar "df"
+    # por alguna dataset "train",
+    # la cual hayas formado previamente para hacer el entrenamiento
+    # Ya dependera estas ultimas lineas de como lo manejes con tenserflow
+    clf = clf.fit( df.drop(columns = [target]), df[target] )
+    score = clf.score(df.drop(columns = [target]), df[target])
+    print(score)
+    return score
