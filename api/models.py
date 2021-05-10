@@ -9,10 +9,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from keras import backend as K
 from sklearn.metrics import r2_score
+from sklearn.preprocessing import OrdinalEncoder, LabelEncoder, OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn import preprocessing
 from datetime import datetime
 from copy import copy
+
 
 
 def prepareData(data, variable, variables, modelType):
@@ -34,9 +36,7 @@ def prepareData(data, variable, variables, modelType):
     elements=elements.T
     
 
-    print(elements)
-    print(type(elements[0][0]))
-    print(modelType)
+    
 
     if(modelType=='neuralN'):
         coef = neuralN(elements)
@@ -48,41 +48,61 @@ def prepareData(data, variable, variables, modelType):
         coef = randomFR(elements)
     return coef
 
+def prepare_inputs_categorical(X_train):
+	ohe = OneHotEncoder()
+	ohe.fit(X_train)
+	X_train_enc = ohe.transform(X_train).toarray()
+
+	return X_train_enc
+
+def prepare_inputs(X):
+	oe = OrdinalEncoder()
+	oe.fit(X)
+	X = oe.transform(X)
+
+	return X
+# prepare target
+def prepare_targets(y_train):
+	le = LabelEncoder()
+	le.fit(y_train)
+	y_train_enc = le.transform(y_train)
+	
+	return y_train_enc
+
 def neuralN(data):
     
-    data =  np.asarray(data).astype('float64')
-    scaler = MinMaxScaler()
-    scaler.fit(data)
-    #data = scaler.transform(data)
-
-    X, test_X, y, test_y = train_test_split(data[:,:-1], data[:,-1], test_size=0.20, random_state=42)
-
+    Y = prepare_targets(data[:,-1])
+    data = prepare_inputs_categorical(data[:,:-1])
+    
+    print(data[:10])
+    print(type(data), data.shape)
+   
+    X, test_X, y, test_y = train_test_split(data, Y, test_size=0.20, random_state=42)
+    
+    
     model = Sequential([
-    layers.Dense(64, activation='relu'),
-    layers.Dense(64, activation='relu'),
-    layers.Dense(1)
+    layers.Dense(32, activation='relu'),
+    layers.Dense(32, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
     ]) 
 
-    model.compile(loss='mean_squared_error',
-                optimizer='adam'
+    model.compile(loss='binary_crossentropy',
+                optimizer='adam', metrics=['accuracy']
                 )
 
-    model.fit(X, y,epochs=80, validation_split = 0.2)
+    model.fit(X, y,epochs=60, validation_split = 0.2)
 
-    loss = model.evaluate(test_X, test_y, verbose=0)
+    _ , acc = model.evaluate(test_X, test_y, verbose=0)
     y_pred = model.predict(test_X)
-
-    r2 = r2_score(test_y, y_pred)
-    print(r2)
-    return r2
+    y_pred =np.array([1 if (x[0]>=0.5) else 0 for x in y_pred ], dtype = np.int32)
+    print(acc)
+    return acc
 
 
 
 def linearR(data):
     data =  np.asarray(data).astype('float64')
-    scaler = MinMaxScaler()
-    scaler.fit(data)
-    #data = scaler.transform(data)
+    
 
     X, test_X, y, test_y = train_test_split(data[:,:-1], data[:,-1], test_size=0.20, random_state=42)
 
