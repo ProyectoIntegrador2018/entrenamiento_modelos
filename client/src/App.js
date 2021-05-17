@@ -19,32 +19,36 @@ class App extends Component {
       xLabel: "",
       yLabel: "",
       coefficient: null,
+      selectAllChecked : false
     };
     
-    onFileChange = event => {
     
-      this.setState({ selectedFile: event.target.files[0] });
-
-      let fileObj = event.target.files[0];
-
-      //just pass the fileObj as parameter
-      ExcelRenderer(fileObj, (err, resp) => {
-        if(err){
-          console.log(err);            
-        }
-        else{
-          this.setState({
-            headers: resp.rows[0],
-            rows: resp.rows.slice(1,11),
-            selectedVariable : 0,
-            trainVariables : [...Array(resp.rows[0].length)].map((u, i) => false),
-            coefficient: null
-          });
-        }
-      }); 
-
-    };
-
+      onFileChange =  ( event) => {
+    
+       if(event.target.files[0] ){
+          this.setState({ selectedFile: event.target.files[0] , rows : null, headers : null, selectedVariable : null, trainVariables : null, selectAllChecked : false});
+  
+          let fileObj = event.target.files[0];
+          
+          //just pass the fileObj as parameter
+        
+             ExcelRenderer( fileObj, (err, resp) => {
+              if(err){
+                console.log(err);            
+              }
+              else{
+                this.setState({
+                  headers: resp.rows[0],
+                  rows: resp.rows.slice(1,11),
+                  selectedVariable : 0,
+                  trainVariables : [...Array(resp.rows[0].length)].map((u, i) => false),
+                  coefficient: null
+                });
+              }
+            });
+          } 
+      }
+  
 
     onFileUpload = () => {
     
@@ -113,7 +117,7 @@ class App extends Component {
       
       return  (
         <div>
-              <label for="variable" >Choose a variable to predict:</label>
+              <label >Choose a variable to predict:</label>
               <select  onChange={this.onVariableChange}>
                 {Object.entries(this.state.headers).map((item) => {    
                             
@@ -149,15 +153,13 @@ class App extends Component {
     }
 
     getTableHead = () => { if(this.state.headers){
-
       return (
           <tr>
           {Object.entries(this.state.headers).map((item) => {                                
-            
-            return (
-              
-              <th key={item[1]}>
-               { item[1]}  <input type="checkbox" value={item[0]}  onChange={this.headersChange} ></input>
+            return (      
+              <th key={item[1]} >
+                <label htmlFor={item[1]} >{ item[1]}</label>
+                 <input type="checkbox" value={item[0]} id={item[1]} onChange={this.headersChange} checked={this.state.trainVariables[item[0]]} ></input>
               </th>
             );
           })}
@@ -166,7 +168,7 @@ class App extends Component {
       );
     }}
 
-    getTableBody() { if(this.state.rows){
+    getTableBody () { if(this.state.rows){
  
   
       return  (
@@ -261,7 +263,7 @@ class App extends Component {
           {this.state.coefficient!==null && 
             (
               <div>
-                <label for="variableToCompare" >Choose a variable to compare with the predicted variable:</label>
+                <label  >Choose a variable to compare with the predicted variable:</label>
                 <select  onChange={this.onVariableToCompareChange}>
                   {Object.entries(this.state.headers).map((item) => {    
                               
@@ -284,6 +286,38 @@ class App extends Component {
         </div>
       );
     };
+
+    onSelectAll = event => {
+      const checked = event.target.checked
+      
+    
+      this.setState(state => {
+        const list = state.trainVariables.map((item, j) => {
+        
+          
+            
+            return checked
+          
+        });
+        return {
+          trainVariables : list,
+          selectAllChecked : checked
+        }
+      })
+    }
+
+    SelectAll = () => {
+      if (this.state.selectedFile){
+        return  (
+          <div>
+            <label>Select all: </label>
+            <input type="checkbox" onChange={this.onSelectAll} checked={this.state.selectAllChecked}></input>
+
+          </div>
+        )
+      }
+
+    }
     
     render() {
     
@@ -295,10 +329,10 @@ class App extends Component {
             <div >
                 <input type="file" onChange={this.onFileChange} />
                 <br></br>
-                <label for="model" >Choose a model:</label>
+                <label >Choose a model:</label>
                 <select id="model" value={this.state.selectedType} onChange={this.onTypeChange} >
                   <option value="neuralN" >Neural Network</option>
-                  <option value="linearR" >Linear Regression</option>
+                  
                   <option value="randomFC">Random Forest Classification</option>
                   <option value="randomFR">Random Forest Regression</option>
                 </select>
@@ -306,6 +340,9 @@ class App extends Component {
                 {this.getVariable()}
 
                 <h3>Select variables to train model</h3>
+                <div>
+                  {this.SelectAll()}
+                </div>
                 <table>
                 <thead>
                   {this.getTableHead()}
