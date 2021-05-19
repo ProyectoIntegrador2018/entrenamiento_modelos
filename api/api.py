@@ -9,10 +9,6 @@ from models import *
 import sys
 
 
-PORT="3000"
-MONGODB="mongodb+srv://dbuser:proyecto1@cluster0-khqt6.mongodb.net/progress?authSource=admin"
-SECRET="1234567890abcdefghijklmnopqrstuvwxyz"
-
 app = Flask(__name__)
 
 app.run(debug=True)
