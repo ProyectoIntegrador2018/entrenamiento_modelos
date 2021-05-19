@@ -3,6 +3,7 @@ import pandas as pd
 from numpy import loadtxt
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
+from keras.callbacks import Callback
 from keras.layers import Dense
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
@@ -14,10 +15,21 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn import preprocessing
 from datetime import datetime
 from copy import copy
+from database import mongo
 
+#mongo.db.progress.insert_one({"name":name, "ind":ind, "acc":acc})
+class CustomCallback(Callback):
+    def __init__(self, name):
+        self.name = name
+        
 
+    def on_epoch_end(self, epoch, logs=None):
+        ind = epoch
+        acc = logs['accuracy']
+        acc = int(acc*10000) / 10000
+        mongo.db.progress.insert_one({"name":self.name, "ind":ind, "acc":acc})
 
-def prepareData(data, variable, variables, modelType):
+def prepareData(data, variable, variables, modelType, name):
     Y = []
     elements = np.array([0]*len(data))
     data = data.T
@@ -39,7 +51,7 @@ def prepareData(data, variable, variables, modelType):
     
 
     if(modelType=='neuralN'):
-        coef = neuralN(elements)
+        coef = neuralN(elements, name)
     elif(modelType=='linearR'):
         coef = linearR(elements)
     elif(modelType=='randomFC'):
@@ -69,20 +81,17 @@ def prepare_targets(y_train):
 	
 	return y_train_enc
 
-def neuralN(data):
+def neuralN(data, name):
     
     Y = prepare_targets(data[:,-1])
     data = prepare_inputs_categorical(data[:,:-1])
     
-    print(data[:10])
-    print(type(data), data.shape)
+   
    
     X, test_X, y, test_y = train_test_split(data, Y, test_size=0.20, random_state=42)
-    
-    
     model = Sequential([
-    layers.Dense(32, activation='relu'),
-    layers.Dense(32, activation='relu'),
+    layers.Dense(16, activation='relu'),
+    layers.Dense(16, activation='relu'),
     layers.Dense(1, activation='sigmoid')
     ]) 
 
@@ -90,11 +99,10 @@ def neuralN(data):
                 optimizer='adam', metrics=['accuracy']
                 )
 
-    model.fit(X, y,epochs=60, validation_split = 0.2)
+    model.fit(X, y,epochs=20, validation_split = 0.2, callbacks=[CustomCallback(name)])
 
     _ , acc = model.evaluate(test_X, test_y, verbose=0)
-    y_pred = model.predict(test_X)
-    y_pred =np.array([1 if (x[0]>=0.5) else 0 for x in y_pred ], dtype = np.int32)
+   
     print(acc)
     return acc
 

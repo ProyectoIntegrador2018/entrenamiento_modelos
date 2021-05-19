@@ -19,14 +19,16 @@ class App extends Component {
       xLabel: "",
       yLabel: "",
       coefficient: null,
-      selectAllChecked : false
+      selectAllChecked : false,
+      progession : []
     };
     
     
       onFileChange =  ( event) => {
-    
+        console.log(event.target.files[0])
        if(event.target.files[0] ){
-          this.setState({ selectedFile: event.target.files[0] , rows : null, headers : null, selectedVariable : null, trainVariables : null, selectAllChecked : false});
+          this.setState({ selectedFile: event.target.files[0] , rows : null, headers : null, selectedVariable : null, trainVariables : null, selectAllChecked : false,
+                            progession: [], variableToCompare : 0, coefficient:null});
   
           let fileObj = event.target.files[0];
           
@@ -49,11 +51,35 @@ class App extends Component {
           } 
       }
   
+      getProgress = (index) =>{
+        let arr = []
+        if(index > 0)
+          arr = this.state.progession
+      
+          axios.get("api/progress",{
+            params:{
+              name:this.state.selectedFile.name,
+              index : index 
+            }
+          }).then(res => {
+            
+            arr.push(res.data)
+            this.setState({progession : arr})
+            if(index < 19)
+              this.getProgress(index+1)
+
+          });
+          
+          
+        console.log(arr)
+
+      
+    }
 
     onFileUpload = () => {
     
       const formData = new FormData();
-    
+      this.setState({progession : [], coefficient : null})
       formData.append(
         "file",
         this.state.selectedFile,
@@ -64,8 +90,9 @@ class App extends Component {
       formData.append("variable",
       this.state.selectedVariable)
       formData.append("variables",
-        this.state.trainVariables
-      )
+        this.state.trainVariables)
+      formData.append("name",
+      this.state.selectedFile.name)
     
       axios.post("api/upload/"+this.state.selectedType, formData).then(res => {
         this.setState({coefficient: res.data});
@@ -80,7 +107,9 @@ class App extends Component {
           yLabel: this.state.headers[this.state.selectedVariable],
         });
       });
-      
+      this.getProgress(0);
+    
+
       console.log(this.state)
     };
 
@@ -103,14 +132,16 @@ class App extends Component {
     }
 
     onVariableToCompareChange = event =>{
+      if(this.state.rows){
       this.setState({variableToCompare: parseInt(event.target.value)});
-      console.log(event.target.value);
+      
       var provitionalXAxis = [];
       this.state.rows.map((row) => {provitionalXAxis.push(row[parseInt(event.target.value)])});
       this.setState({
         xAxis: provitionalXAxis,
         xLabel: this.state.headers[parseInt(event.target.value)],
       });
+    }
     }
 
     getVariable = () => { if(this.state.headers){
@@ -223,7 +254,25 @@ class App extends Component {
       }
     };
 
+    displayProgress(){
+      if(this.state.progession.length > 0){
+        return (
+        <div>
+          {Object.entries(this.state.progession).map((item) => {    
+            return(
+          
+              <p key={item[0]} >Result after epoch {item[0]}  accuracy : {item[1]}</p> 
+           
+            )
+        })}
+        </div>
+        )
+      } 
+    }
+
     resultData = () => {
+      if(this.state.headers == null)
+        return(<div></div>)
 
       const data = {
         labels: ['Success', 'Failure'],
@@ -260,7 +309,9 @@ class App extends Component {
       return (
         <div>
           <h2>Results</h2>
-          {this.state.coefficient!==null && 
+          <div>{this.displayProgress()}</div>
+
+          {this.state.coefficient!==null ?
             (
               <div>
                 <label  >Choose a variable to compare with the predicted variable:</label>
@@ -281,7 +332,7 @@ class App extends Component {
                   <Line  data={lineData} options={{responsive: true, maintainAspectRatio: false}}/>
                 </div>
               </div>
-            )
+            ) : (<div></div>)
           }
         </div>
       );
