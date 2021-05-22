@@ -1,3 +1,5 @@
+import os
+import tempfile
 import numpy as np
 import pandas as pd
 from numpy import loadtxt
@@ -102,8 +104,11 @@ def neuralN(data, name):
     model.fit(X, y,epochs=20, validation_split = 0.2, callbacks=[CustomCallback(name)])
 
     _ , acc = model.evaluate(test_X, test_y, verbose=0)
+
+    
    
     print(acc)
+    model.save('test.h5')
     return acc
 
 
@@ -115,6 +120,8 @@ def linearR(data):
     X, test_X, y, test_y = train_test_split(data[:,:-1], data[:,-1], test_size=0.20, random_state=42)
 
     reg = LinearRegression().fit(X, y)
+
+    reg.save("te.h5")
 
     score = reg.score(test_X, test_y)
     print(score)
@@ -143,6 +150,7 @@ def randomFC(data):
 
     # Hacemos el fit de la clasificacion
     clf = clf.fit( df.drop(columns = [target]), df[target] )
+    clf.save("te2.h5")
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
     return score
@@ -166,6 +174,7 @@ def randomFR(data):
 
     # Hacemos el fit de la clasificacion
     clf = clf.fit( df.drop(columns = [target]), df[target] )
+    clf.save("te3.h5")
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
     return score
