@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response,  send_file, send_from_directory, safe_join, abort
 from database import mongo
 from flask_cors import CORS
 from tablib import Dataset
@@ -40,6 +40,22 @@ def progress():
         return str("Not found")
     
     return str(x["acc"])
+
+@app.route('/api/getModel')
+def getModel():
+    name = request.args.get("name")
+    model = request.args.get("model")
+    print(name, model)
+    if(model == "neuralN"):
+        name = name+".h5"
+    else:
+        name = name+".pickle"
+    try:
+        return send_from_directory("models/", filename=name, as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
+    
+    
 
 @app.route('/api/upload/<modelType>', methods = ['POST'])
 def upload_file(modelType):

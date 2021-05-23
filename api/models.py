@@ -3,6 +3,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 from numpy import loadtxt
+import pickle
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.callbacks import Callback
@@ -57,9 +58,9 @@ def prepareData(data, variable, variables, modelType, name):
     elif(modelType=='linearR'):
         coef = linearR(elements)
     elif(modelType=='randomFC'):
-        coef = randomFC(elements)
+        coef = randomFC(elements, name)
     elif(modelType=='randomFR'):
-        coef = randomFR(elements)
+        coef = randomFR(elements, name)
     return coef
 
 def prepare_inputs_categorical(X_train):
@@ -108,7 +109,8 @@ def neuralN(data, name):
     
    
     print(acc)
-    model.save('test.h5')
+    name = name.split(".")[0]
+    model.save("models/"+name+'.h5')
     return acc
 
 
@@ -121,13 +123,12 @@ def linearR(data):
 
     reg = LinearRegression().fit(X, y)
 
-    reg.save("te.h5")
-
+  
     score = reg.score(test_X, test_y)
     print(score)
     return score
 
-def randomFC(data):
+def randomFC(data, name):
     df = pd.DataFrame(data)
     target = df.columns[-1]
     ######## Manipulacion de la data
@@ -150,12 +151,16 @@ def randomFC(data):
 
     # Hacemos el fit de la clasificacion
     clf = clf.fit( df.drop(columns = [target]), df[target] )
-    clf.save("te2.h5")
+
+    name = name.split(".")[0]
+    filename = name + '.pickle'
+    
+    pickle.dump(clf, open("models/"+filename, 'wb'))
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
     return score
 
-def randomFR(data):
+def randomFR(data, name):
     df = pd.DataFrame(data)
     target = df.columns[-1]
     ######## Manipulacion de la data
@@ -174,7 +179,10 @@ def randomFR(data):
 
     # Hacemos el fit de la clasificacion
     clf = clf.fit( df.drop(columns = [target]), df[target] )
-    clf.save("te3.h5")
+    
+    name = name.split(".")[0]
+    filename = name + '.pickle'
+    pickle.dump(clf, open("models/"+filename, 'wb'))
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
     return score
