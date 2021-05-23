@@ -1,6 +1,8 @@
 import axios from 'axios';
 import {ExcelRenderer} from 'react-excel-renderer';
 import { Doughnut, Line } from 'react-chartjs-2';
+import {Navbar, Nav, Button} from 'react-bootstrap';
+import logo from './logo.png';
  
 import React,{Component} from 'react';
  
@@ -327,7 +329,7 @@ class App extends Component {
           {this.state.coefficient!==null ?
             (
               <div>
-                <button onClick={this.downloadModel}>Download Model!</button>
+                <Button variant="dark" onClick={this.downloadModel}>Download Model!</Button>
                 <br/>
                 <label  >Choose a variable to compare with the predicted variable:</label>
                 <select  onChange={this.onVariableToCompareChange}>
@@ -389,42 +391,65 @@ class App extends Component {
     
       return (
         <div>
-            <h1>
-              Models Training
-            </h1>
-            <div >
-                <input type="file" onChange={this.onFileChange} />
-                <br></br>
-                <label >Choose a model:</label>
-                <select id="model" value={this.state.selectedType} onChange={this.onTypeChange} >
-                  <option value="neuralN" >Neural Network</option>
+            <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" sticky="top">
+              <img src={logo} width="50" height="50"/>
+              <Navbar.Brand href="#home">Models Training</Navbar.Brand>
+              <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+              <Navbar.Collapse id="responsive-navbar-nav">
+                <Nav className="mr-auto">
+                  <Nav.Link href="#dataFile">Data File</Nav.Link>
+                  <Nav.Link href="#variables">Variables</Nav.Link>
+                  <Nav.Link href="#details">Details</Nav.Link>
+                  <Nav.Link href="#results">Results</Nav.Link>
+                </Nav>
+              </Navbar.Collapse>
+            </Navbar>
+            <br></br>
+            <div style={{paddingLeft:30}}>
+              <div>
+                  <div id="dataFile">
+                    <h3>Select Data File</h3>
+                    <input type="file" onChange={this.onFileChange} />
+                    <br></br>
+                    <label >Choose a model:</label>
+                    <select id="model" value={this.state.selectedType} onChange={this.onTypeChange} >
+                      <option value="neuralN" >Neural Network</option>
+                      
+                      <option value="randomFC">Random Forest Classification</option>
+                      <option value="randomFR">Random Forest Regression</option>
+                    </select>
+                  </div>
                   
-                  <option value="randomFC">Random Forest Classification</option>
-                  <option value="randomFR">Random Forest Regression</option>
-                </select>
+                  <div id="variables">
+                    {this.getVariable()}
 
-                {this.getVariable()}
+                    <h3>Select variables to train model</h3>
+                    <div>
+                      {this.SelectAll()}
+                    </div>
+                    <table>
+                    <thead>
+                      {this.getTableHead()}
+                    </thead>   
 
-                <h3>Select variables to train model</h3>
-                <div>
-                  {this.SelectAll()}
-                </div>
-                <table>
-                <thead>
-                  {this.getTableHead()}
-                </thead>   
-             
-                  {this.getTableBody()}
-              
-                </table>
-                
+                      {this.getTableBody()}
 
-                <button onClick={this.onFileUpload}>
-                  Upload!
-                </button>
+                    </table>
+
+
+                    <Button variant="dark" onClick={this.onFileUpload}>
+                      Upload!
+                    </Button>
+                  </div>
+                  
+              </div>
+            <div id="details">
+              {this.fileData()}
             </div>
-          {this.fileData()}
-          {this.resultData()}
+            <div id="results">
+              {this.resultData()}
+            </div>
+          </div>
         </div>
       );
     }
