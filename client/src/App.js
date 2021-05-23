@@ -107,6 +107,7 @@ class App extends Component {
           yLabel: this.state.headers[this.state.selectedVariable],
         });
       });
+      if(this.state.selectedType == "neuralN")
       this.getProgress(0);
     
 
@@ -270,6 +271,18 @@ class App extends Component {
       } 
     }
 
+    downloadModel = () =>{
+
+      
+      //const FileDownload = require('js-file-download');
+      let name = this.state.selectedFile.name;
+      name = name.split(".")[0]
+
+      
+      window.open("http://localhost:5000/api/getModel?name="+name+"&model="+this.state.selectedType, "_blank");
+    
+    }
+
     resultData = () => {
       if(this.state.headers == null)
         return(<div></div>)
@@ -314,6 +327,8 @@ class App extends Component {
           {this.state.coefficient!==null ?
             (
               <div>
+                <button onClick={this.downloadModel}>Download Model!</button>
+                <br/>
                 <label  >Choose a variable to compare with the predicted variable:</label>
                 <select  onChange={this.onVariableToCompareChange}>
                   {Object.entries(this.state.headers).map((item) => {    
