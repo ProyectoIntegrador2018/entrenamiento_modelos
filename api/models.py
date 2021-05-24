@@ -15,17 +15,17 @@ from keras import backend as K
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder, OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn import preprocessing
 from datetime import datetime
 from copy import copy
 from database import mongo
+import pickle
 
 #mongo.db.progress.insert_one({"name":name, "ind":ind, "acc":acc})
 class CustomCallback(Callback):
     def __init__(self, name):
         self.name = name
-        
-
     def on_epoch_end(self, epoch, logs=None):
         ind = epoch
         acc = logs['accuracy']
@@ -51,7 +51,7 @@ def prepareData(data, variable, variables, modelType, name):
     elements=elements.T
     
 
-    
+
 
     if(modelType=='neuralN'):
         coef = neuralN(elements, name)
@@ -115,9 +115,10 @@ def neuralN(data, name):
 
 
 
+
 def linearR(data):
     data =  np.asarray(data).astype('float64')
-    
+ 
 
     X, test_X, y, test_y = train_test_split(data[:,:-1], data[:,-1], test_size=0.20, random_state=42)
 
@@ -136,6 +137,10 @@ def randomFC(data, name):
     # Donde OK es 1, y 0 es Rechazado
     df[target] = df[target].map(lambda x: 1 if x == "OK" else 0)
     # Esta sera una lista de las columnas 
+    # que hacen falta discretizar
+    # Cambiamos el FECHA_ALTA a algo que podamos manipular para 
+    # el algoritmo de clasificacion
+
     cols = list( df.drop(columns = [target]).columns )
     # Discretizamos cols
     for i in cols:
@@ -146,10 +151,23 @@ def randomFC(data, name):
 
         # transformamos la columna de interes
         df[i] = le.transform( df[i] )
-    # Objeto de clasificacion
-    clf = RandomForestClassifier(max_depth=2, random_state=0)
+    # Objeto de clasificacio
+    tscore = []
+    for i in range(1,100):
+        regr = RandomForestClassifier(n_estimators=i, random_state=1)
+        regr = regr.fit( df.drop(columns = [target]), df[target])
+        aux = regr.predict( df.drop(columns = [target]) ) 
+        tscore.append([i, accuracy_score( df[target] , aux, squared=False)])
+    
+    tscore = pd.DataFrame(tscore)
+    tscore.columns = ["i", "rmse"]
+    i = int(tscore[ tscore["rmse"] == tscore["rmse"].min() ].iloc[0]["i"])
 
-    # Hacemos el fit de la clasificacion
+    clf = RandomForestClassifier(n_estimators=i, random_state=1)
+    clf = clf.fit( df.drop(columns = [target]), df[target])
+
+    aux = clf.predict( df.drop(columns = [target]) )
+
     clf = clf.fit( df.drop(columns = [target]), df[target] )
 
     name = name.split(".")[0]
@@ -164,6 +182,7 @@ def randomFR(data, name):
     df = pd.DataFrame(data)
     target = df.columns[-1]
     ######## Manipulacion de la data
+    # Esta sera una lista de las columnas 
     cols = list( df.drop(columns = [target]).columns )
     # Discretizamos cols
     for i in cols:
@@ -175,9 +194,23 @@ def randomFR(data, name):
         # transformamos la columna de interes
         df[i] = le.transform( df[i] )
     # Objeto de clasificacion
-    clf = RandomForestRegressor(max_depth=2, random_state=0)
+    tscore = []
+    for i in range(1,100):
+        regr = RandomForestRegressor(n_estimators=i, random_state=1)
+        regr = regr.fit( df.drop(columns = [target]), df[target])
+        aux = regr.predict( df.drop(columns = [target]) ) 
+        tscore.append([i, mean_squared_error( df[target] , aux, squared=False)])
 
-    # Hacemos el fit de la clasificacion
+    tscore = pd.DataFrame(tscore)
+    tscore.columns = ["i", "rmse"]
+
+    i = int(tscore[ tscore["rmse"] == tscore["rmse"].min() ].iloc[0]["i"])
+
+    clf = RandomForestRegressor(n_estimators=i, random_state=1)
+    clf = clf.fit( df.drop(columns = [target]), df[target])
+
+    aux = clf.predict( df.drop(columns = [target]) )
+
     clf = clf.fit( df.drop(columns = [target]), df[target] )
     
     name = name.split(".")[0]
@@ -185,4 +218,4 @@ def randomFR(data, name):
     pickle.dump(clf, open("models/"+filename, 'wb'))
     score = clf.score(df.drop(columns = [target]), df[target])
     print(score)
-    return score
+    return  score

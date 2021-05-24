@@ -20,7 +20,8 @@ class App extends Component {
       yLabel: "",
       coefficient: null,
       selectAllChecked : false,
-      progession : []
+      progession : [],
+      model: []
     };
     
     
@@ -50,7 +51,24 @@ class App extends Component {
             });
           } 
       }
-  
+      prediccion = () => {if(this.state.headers){
+        return  (
+          <div>
+                <h3>Prediccion</h3>
+                <label >Choose a variable:</label>
+                <select  onChange={this.onVariableChange}>
+                  {Object.entries(this.state.trainVariables).map((item) => {    
+                     <option value={item[0]}  key={item[0]}>{item[1]}</option>
+                    return (
+                      <option value={item[0]}  key={item[0]}>{item[1]}</option>
+                    
+                    );
+                  })}
+                </select>
+          </div>
+        )
+      }
+      }
       getProgress = (index) =>{
         let arr = []
         if(index > 0)
@@ -205,7 +223,7 @@ class App extends Component {
   
       return  (
         <tbody>
-          {Object.entries(this.state.rows.slice(0,10)).map((item) => {    
+          {Object.entries(this.state.rows.slice(0,3)).map((item) => {    
           
             return ( 
             <tr key={item[0]}>             
@@ -398,13 +416,12 @@ class App extends Component {
                 <label >Choose a model:</label>
                 <select id="model" value={this.state.selectedType} onChange={this.onTypeChange} >
                   <option value="neuralN" >Neural Network</option>
-                  
                   <option value="randomFC">Random Forest Classification</option>
                   <option value="randomFR">Random Forest Regression</option>
                 </select>
 
                 {this.getVariable()}
-
+                {this.fileData()}
                 <h3>Select variables to train model</h3>
                 <div>
                   {this.SelectAll()}
@@ -423,8 +440,8 @@ class App extends Component {
                   Upload!
                 </button>
             </div>
-          {this.fileData()}
           {this.resultData()}
+          {this.prediccion()}
         </div>
       );
     }
