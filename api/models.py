@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.callbacks import Callback
 from keras.layers import Dense
-from tensorflow.keras import layers
+from keras import layers
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from keras import backend as K

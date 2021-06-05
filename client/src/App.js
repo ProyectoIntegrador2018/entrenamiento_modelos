@@ -110,7 +110,7 @@ class App extends Component {
         });
       });
       if(this.state.selectedType == "neuralN")
-      this.getProgress(0);
+        this.getProgress(0);
     
 
       console.log(this.state)

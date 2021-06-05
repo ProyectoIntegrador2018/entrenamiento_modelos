@@ -10,8 +10,8 @@ import sys
 
 
 app = Flask(__name__)
-
-app.run(debug=True)
+if __name__ == '__main__':
+    flaskapp.run(debug=True)
 CORS(app)
 
 app.config["MONGO_URI"] = "mongodb+srv://dbuser:proyecto1@cluster0-khqt6.mongodb.net/progress?authSource=admin"
@@ -27,7 +27,7 @@ def hola_mundo():
 def progress():
     name = request.args.get("name")
     ind = request.args.get("index")
-    limit = 5000
+    limit = 10000
     x = None
     while(x == None and limit >= 0):
         x = mongo.db.progress.find_one({  "name": name, "ind": int(ind) })
