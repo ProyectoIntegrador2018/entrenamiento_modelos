@@ -7,6 +7,7 @@ Before setting up the project, you need to install the following three packages:
  * [Node.js](https://nodejs.org/en/)
  * [Yarn](https://yarnpkg.com/)
  * [Python](https://www.python.org)
+ * [Firebase](https://firebase.google.com)
 
 Supported versions for python: Python 3.5-3.8  64-bit
 
@@ -50,4 +51,50 @@ $ git clone https://github.com/ProyectoIntegrador2018/entrenamiento_modelos.git
 
 ```
 $ npm install
+```
+### Deploy in firebase
+1. Login in the FirebaseConsole with the credencials in Accesos.txt in the next page:
+
+```
+$ https://accounts.google.com/signin/v2/identifier?flowName=GlifWebSignIn&flowEntry=ServiceLogin
+```
+
+2. Install Firebase CLI in your machine
+
+```
+$ npm install -g firebase-tools
+```
+
+3. Acces to the acount throught the next command:
+
+```
+$ firebase login
+```
+
+3. Inside the client Folder inicialize firebase
+
+```
+% firebase init
+```
+  Select hosting navigating with the arrows and select the opcion with spacebar and then press enter
+
+  Do not replace the index.html and not link-it with github
+  
+
+4. In the firebase.json change public atributte:
+
+```
+% "public": "build",
+```
+
+5. In the terminal of Client use the following command:
+
+```
+% npm run deploy
+```
+
+6. Deploy the proyect to firebase with the next command:
+
+```
+% firebase deploy
 ```
